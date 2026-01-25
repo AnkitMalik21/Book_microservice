@@ -1,0 +1,68 @@
+server:
+  port: 8080 # The port where the Gateway itself is reachable
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # --- ROUTE CONFIGURATION ---
+      routes:
+        # Auth Service: Handles login/registration
+        - id: auth-service
+          uri: lb://AUTH-SERVICE # 'lb' enables client-side load balancing via Eureka
+          predicates:
+            - Path=/auth/** # Matches any request starting with /auth/
+          filters:
+            # IMPORTANT: This strips '/auth' from the URL before sending to the service.
+            # Example: Gateway /auth/login -> Auth-Service /login
+            - RewritePath=/auth/(?<segment>.*), /$\{segment}
+
+        # Book Service: For managing book inventory
+        - id: book-service
+          uri: lb://BOOK-SERVICE
+          predicates:
+            - Path=/api/books/**
+          filters:
+            - RewritePath=/api/books/(?<segment>.*), /$\{segment}
+            # REVISION NOTE: Ensure the 'JwtAuthenticationFilter' bean is applied here
+            # if you want to protect these endpoints.
+
+        # Order Service: For handling customer purchases
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - RewritePath=/api/orders/(?<segment>.*), /$\{segment}
+
+      # --- CORS CONFIGURATION ---
+      # Controls which front-end domains can talk to your API
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*" # REVISION: Change this to your specific UI domain in production
+            allowed-methods: "*"
+            allowed-headers: "*"
+
+# --- EUREKA SERVICE DISCOVERY ---
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # The address of the Eureka Server
+    register-with-service: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true # Use IP addresses instead of hostnames for routing reliability
+
+# --- SECURITY KEYS ---
+jwt:
+  # REVISION: Never hardcode this in a real production file; use environment variables!
+  secret: MySecretKeyForJWTTokenGenerationMustBe256BitsLong12345
+
+# --- TROUBLESHOOTING ---
+logging:
+  level:
+    # Use DEBUG to see exactly how requests are being routed in the console
+    org.springframework.cloud.gateway: DEBUG
