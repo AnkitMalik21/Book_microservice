@@ -1,0 +1,72 @@
+#Book Service Configuration
+server:
+  port: 8082
+
+spring:
+  application:
+    name: book-service # Eureka Service name (Must match gateway route)
+
+  # PostgreSQL Database
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_db
+    username: postgres
+    password: Malik@1
+    driver-class-name: org.postgresql.Driver
+
+
+  # JPA / HIBERNATE
+  jpa:
+    hibernate:
+      ddl-auto: update #create table automatically
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # Acutator Endpoints:
+  boot:
+    admin:
+      client:
+        enabled: false
+
+#Eureka Discovery Client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value} #Unique ID for multiple
+
+instances:
+  lease-renewal-interval-in-seconds: 30
+  lease-expiration-duration-in-second: 90
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,eureka
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.book_service: DEBUG
+    org.springframework.cloud: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # Shows parameter binding
+
+# Server Management
+info:
+  app:
+    name: book-service
+    description: Book Management Microservice
+    version: 1.0.0
