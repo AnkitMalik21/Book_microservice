@@ -38,6 +38,11 @@ public class Book {
     @Size(max = 255,message="Title too long")
     private String title;
 
+    @Column(nullable = false,length = 100)
+    @NotBlank(message = "Author is required")
+    @Size(max = 100)
+    private String author;
+
     @Column(unique = true,nullable= false,length=13)
     @NotBlank(message="ISBN is required")
     @Pattern(regexp="\\d{10}|\\d{13}",message = "Invalid ISBN format")

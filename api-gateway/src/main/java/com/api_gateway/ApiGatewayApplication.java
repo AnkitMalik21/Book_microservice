@@ -23,6 +23,23 @@ public class ApiGatewayApplication {
 
 		SpringApplication.run(ApiGatewayApplication.class, args);
 		System.out.println("Api Gateway started at http://localhost:8080");
+
+		System.out.println("""
+            
+            ╔═══════════════════════════════════════════════╗
+            ║   🚪 API GATEWAY STARTED SUCCESSFULLY        ║
+            ╠═══════════════════════════════════════════════╣
+            ║   Port: 8080                                 ║
+            ║   Health: http://localhost:8080/actuator/health ║
+            ║   Eureka: http://localhost:8761              ║
+            ╠═══════════════════════════════════════════════╣
+            ║   Routes:                                    ║
+            ║   • /auth/**         → AUTH-SERVICE          ║
+            ║   • /api/books/**    → BOOK-SERVICE (JWT)    ║
+            ║   • /api/orders/**   → ORDER-SERVICE (JWT)   ║
+            ╚═══════════════════════════════════════════════╝
+            
+            """);
 	}
 
 }

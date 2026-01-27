@@ -25,7 +25,6 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class JwtAuthenticationFilter implements GatewayFilter {
-
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -34,38 +33,45 @@ public class JwtAuthenticationFilter implements GatewayFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
 
-        //Extract Authorization header
+        // Step 1: Extract Authorization header
+        // Check if Authorization header exists
         if(!request.getHeaders().containsKey("Authorization")){
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        String authHeader = request.getHeaders().get("Authorization").get(0);
 
-        // Check if header starts with "Bearer "
+
+        //Step 2: Extract Authorization header
+        String authHeader = request.getHeaders().get("Authoirzation").get(0);
+
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        // Extract token (remove "Bearer " prefix)
+
+        //Step 3: Extract token (remove "Bearer " prefix)
         String token = authHeader.substring(7);
 
-        //validate Token
-        if(!jwtUtil.validationToken(token)){
+
+        //Step 4: Validation token
+        if(!jwtUtil.validateToken(token)){
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
-        //Extract username and add ti request header
-        //Why? so downstream services know WHO is making the request
+        //Step 5: Extract username and role
         String username = jwtUtil.extractUsername(token);
+        String role = jwtUtil.extractRole(token); //Extract role
+
+        //Step 6 : Add headers for downstream services
         ServerHttpRequest modifiedRequest = request.mutate()
-                .header("X-User-Id",username)
+                .header("X-User-Id",username) //Username for audit trail
+                .header("X-User-Role", role) // Pass role
                 .build();
 
-        // Forward to next filter/service
+        //Step 7: Forward request with modified headers
         return chain.filter(exchange.mutate().request(modifiedRequest).build());
-
     }
 }

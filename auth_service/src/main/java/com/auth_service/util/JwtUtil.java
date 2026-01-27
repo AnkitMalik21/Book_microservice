@@ -97,6 +97,10 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
+    public String extractRole(String token){
+        return (String) extractAllClaims(token).get("role");
+    }
+
     private Claims extractAllClaims(String token){
          return Jwts.parser()
                  .verifyWith(getSigningKey())

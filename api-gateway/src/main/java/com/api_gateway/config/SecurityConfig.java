@@ -22,10 +22,16 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeExchange(exchange -> exchange
+                        //Public endpoints (no authentication)
                         .pathMatchers("/auth/**").permitAll() //Allow auth endpoints without token
                         .pathMatchers("/eureka/**").permitAll() //Allow Eureka dashboard
-                        .anyExchange().authenticated() //All other routes need authentication
+                        .pathMatchers("/actuator/**").permitAll()
+
+                        //All other routes need authentication
+                        // (JwtsAuthenticationFilter handles validation)
+                        .anyExchange().authenticated()
                 )
+                //Disable form login & HTTP basic auth
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 

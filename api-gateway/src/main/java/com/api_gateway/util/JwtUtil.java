@@ -1,6 +1,7 @@
 package com.api_gateway.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JWT Utility Class
@@ -30,6 +33,9 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
+    @Value("${jwt.expiration}")
+    private Long expiration;
+
     /**
      Get Signing key from secret String
      */
@@ -46,7 +52,7 @@ public class JwtUtil {
      * 3. Claims are present
      */
 
-    public boolean validationToken(String token){
+    public boolean validateToken(String token){
         try{
             Jwts.parser()
                     .verifyWith(getSigningKey())
@@ -73,12 +79,21 @@ public class JwtUtil {
 
     //check if token is expired
     public boolean isTokenExpired(String token){
-        return getAllClaims(token).getExpiration().before(new Date());
+        try{
+            return getAllClaims(token).getExpiration().before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     //Extract username from token
     public String extractUsername(String token){
         return getAllClaims(token).getSubject();
+    }
+
+    //Extract role from JWT
+    public String extractRole(String token){
+        return (String) getAllClaims(token).get("role");
     }
 
 }
