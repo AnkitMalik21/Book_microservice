@@ -33,5 +33,7 @@ public class SecurityContextFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
+        filterChain.doFilter(request,response);
     }
 }
